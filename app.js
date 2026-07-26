@@ -734,69 +734,72 @@ function setupCalculator(r) {
   };
 
   // Bind events for inputs
-  calcMultiInput.addEventListener('input', calculateRatio);
-  document.querySelectorAll('.calc-preset-btn').forEach(b => {
-    b.onclick = (e) => {
-      e.preventDefault();
-      calcMultiInput.value = b.dataset.val;
+  if (!window._calcEventsBound) {
+    calcMultiInput.addEventListener('input', calculateRatio);
+    document.querySelectorAll('.calc-preset-btn').forEach(b => {
+      b.onclick = (e) => {
+        e.preventDefault();
+        calcMultiInput.value = b.dataset.val;
+        calculateRatio();
+      };
+    });
+    
+    const shapeInputs = [origShape, origDim1, origDim2, newShape, newDim1, newDim2, origHeight, newHeight];
+    shapeInputs.forEach(i => i.addEventListener('input', calculateRatio));
+    
+    origShape.addEventListener('change', () => { origDim2.style.display = origShape.value === 'rectangle' ? 'inline-block' : 'none'; calculateRatio(); });
+    newShape.addEventListener('change', () => { newDim2.style.display = newShape.value === 'rectangle' ? 'inline-block' : 'none'; calculateRatio(); });
+    
+    calcModeRadios.forEach(r => r.addEventListener('change', e => {
+      if (e.target.value === 'multiplier') {
+        multiSection.style.display = 'flex';
+        shapeSection.style.display = 'none';
+      } else {
+        multiSection.style.display = 'none';
+        shapeSection.style.display = 'flex';
+      }
       calculateRatio();
-    };
-  });
-  
-  const shapeInputs = [origShape, origDim1, origDim2, newShape, newDim1, newDim2, origHeight, newHeight];
-  shapeInputs.forEach(i => i.addEventListener('input', calculateRatio));
-  
-  origShape.addEventListener('change', () => { origDim2.style.display = origShape.value === 'rectangle' ? 'inline-block' : 'none'; calculateRatio(); });
-  newShape.addEventListener('change', () => { newDim2.style.display = newShape.value === 'rectangle' ? 'inline-block' : 'none'; calculateRatio(); });
-  
-  calcModeRadios.forEach(r => r.addEventListener('change', e => {
-    if (e.target.value === 'multiplier') {
-      multiSection.style.display = 'flex';
-      shapeSection.style.display = 'none';
-    } else {
-      multiSection.style.display = 'none';
-      shapeSection.style.display = 'flex';
-    }
-    calculateRatio();
-  }));
-  
-  useHeightCb.addEventListener('change', e => {
-    heightInputs.style.display = e.target.checked ? 'flex' : 'none';
-    calculateRatio();
-  });
-  
-  // Custom Select Logic
-  document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
-    const select = wrapper.querySelector('.custom-select');
-    const trigger = wrapper.querySelector('.custom-select-trigger');
-    const options = wrapper.querySelectorAll('.custom-option');
-    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+    }));
     
-    trigger.addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.custom-select').forEach(s => {
-        if (s !== select) s.classList.remove('open');
-      });
-      select.classList.toggle('open');
+    useHeightCb.addEventListener('change', e => {
+      heightInputs.style.display = e.target.checked ? 'flex' : 'none';
+      calculateRatio();
     });
     
-    options.forEach(opt => {
-      opt.addEventListener('click', (e) => {
+    // Custom Select Logic
+    document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
+      const select = wrapper.querySelector('.custom-select');
+      const trigger = wrapper.querySelector('.custom-select-trigger');
+      const options = wrapper.querySelectorAll('.custom-option');
+      const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+      
+      trigger.addEventListener('click', (e) => {
         e.stopPropagation();
-        options.forEach(o => o.classList.remove('selected'));
-        opt.classList.add('selected');
-        trigger.querySelector('span').textContent = opt.textContent;
-        hiddenInput.value = opt.dataset.value;
-        select.classList.remove('open');
-        hiddenInput.dispatchEvent(new Event('change'));
+        document.querySelectorAll('.custom-select').forEach(s => {
+          if (s !== select) s.classList.remove('open');
+        });
+        select.classList.toggle('open');
+      });
+      
+      options.forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          e.stopPropagation();
+          options.forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          trigger.querySelector('span').textContent = opt.textContent;
+          hiddenInput.value = opt.dataset.value;
+          select.classList.remove('open');
+          hiddenInput.dispatchEvent(new Event('change'));
+        });
       });
     });
-  });
+    
+    window.addEventListener('click', () => {
+      document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('open'));
+    });
   
-  window.addEventListener('click', () => {
-    document.querySelectorAll('.custom-select').forEach(s => s.classList.remove('open'));
-  });
-
+    window._calcEventsBound = true;
+  }
   calculateRatio(); // Initial
 }
 
