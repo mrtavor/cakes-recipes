@@ -561,8 +561,8 @@ function parseBlocks(content, recipeTitle = '') {
           
           if (typeof youtubeLinks !== 'undefined' && youtubeLinks[videoId]) {
             const ytId = youtubeLinks[videoId];
-            html += `<div class="recipe-embed" style="margin: 16px auto; max-width: 800px; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-md);">
-                       <iframe style="width: 100%; height: 50vh; max-height: 400px; border: 0;" src="https://www.youtube.com/embed/${ytId}?rel=0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+            html += `<div class="recipe-embed" style="position: relative; margin: 24px auto; width: 100%; max-width: 800px; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-md); aspect-ratio: 16/9;">
+                       <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" src="https://www.youtube.com/embed/${ytId}?rel=0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
                      </div>`;
           } else {
             // Перевіряємо, чи сайт відкритий локально (з диска E: або через localhost)
