@@ -33,7 +33,7 @@ function getCategories(r) {
 // ── State ────────────────────────────────────
 let allRecipes   = [];
 let filtered     = [];
-let activeCategory = 'all';
+let activeCategories = [];
 let searchQuery  = '';
 let sortMode     = 'default';
 let favorites    = JSON.parse(localStorage.getItem('ps_favorites') || '[]');
@@ -190,41 +190,77 @@ function buildCategories() {
     });
   });
 
-  const cats = Object.entries(catMap);
+  const cats = Object.entries(catMap).sort((a,b) => a[1].localeCompare(b[1], 'ru'));
   statCats.textContent = cats.length || '—';
 
-  categoryTabs.innerHTML = `
-    <button class="cat-tab active" data-cat="all">Всі рецепти</button>
-    <button class="cat-tab" data-cat="favorites">❤️ Обране</button>
+  const openBtn = document.getElementById('openFiltersBtn');
+  const modal = document.getElementById('filtersModalOverlay');
+  const closeBtn = document.getElementById('closeFiltersBtn');
+  const modalBody = document.getElementById('filtersModalBody');
+  const clearBtn = document.getElementById('clearFiltersBtn');
+  const applyBtn = document.getElementById('applyFiltersBtn');
+
+  if (!modalBody) return;
+
+  let html = `
+    <label class="filter-item">
+      <input type="checkbox" value="favorites"> ❤️ Обране
+    </label>
   `;
   cats.forEach(([id, name]) => {
-    const btn = document.createElement('button');
-    btn.className = 'cat-tab';
-    btn.dataset.cat = id;
-    btn.textContent = name;
-    categoryTabs.appendChild(btn);
+    html += `
+      <label class="filter-item">
+        <input type="checkbox" value="${id}"> ${name}
+      </label>
+    `;
+  });
+  modalBody.innerHTML = html;
+
+  const updateCheckboxes = () => {
+    modalBody.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.checked = activeCategories.includes(cb.value);
+    });
+  };
+
+  if (openBtn) {
+    openBtn.addEventListener('click', () => {
+      updateCheckboxes();
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('open'), 10);
+    });
+  }
+
+  const closeModal = () => {
+    modal.classList.remove('open');
+    setTimeout(() => modal.style.display = 'none', 300);
+  };
+  
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (modal) modal.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
   });
 
-  categoryTabs.addEventListener('click', e => {
-    const btn = e.target.closest('.cat-tab');
-    if (!btn) return;
-    document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    activeCategory = btn.dataset.cat;
-    
-    // Smooth scroll the clicked tab into view
-    btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    
-    renderGrid();
-  });
-  
-  // Enable horizontal scrolling with mouse wheel
-  categoryTabs.addEventListener('wheel', e => {
-    if (e.deltaY !== 0) {
-      e.preventDefault();
-      categoryTabs.scrollLeft += e.deltaY * 1.5; // multiplier for slightly faster scroll
-    }
-  }, { passive: false });
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      modalBody.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    });
+  }
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      const checked = Array.from(modalBody.querySelectorAll('input:checked')).map(cb => cb.value);
+      activeCategories = checked;
+      
+      if (activeCategories.length > 0) {
+        openBtn.textContent = `Фільтри (${activeCategories.length})`;
+      } else {
+        openBtn.textContent = `Фільтри (0)`;
+      }
+      
+      renderGrid();
+      closeModal();
+    });
+  }
 }
 
 // ── Render Grid ───────────────────────────────
@@ -235,13 +271,15 @@ function renderGrid() {
     const matchSearch = !searchQuery || title.includes(searchQuery.toLowerCase());
     const cats = getCategories(r);
     const isFav = favorites.includes(r.info?.card_id);
-    let matchCat = false;
-    if (activeCategory === 'all') {
-      matchCat = true;
-    } else if (activeCategory === 'favorites') {
-      matchCat = isFav;
-    } else {
-      matchCat = cats.some(c => String(c.category_id) === activeCategory || c.name === activeCategory);
+    
+    let matchCat = true;
+    if (activeCategories.length > 0) {
+      matchCat = false;
+      if (activeCategories.includes('favorites') && isFav) {
+        matchCat = true;
+      } else {
+        matchCat = cats.some(c => activeCategories.includes(String(c.category_id)) || activeCategories.includes(c.name));
+      }
     }
     return matchSearch && matchCat;
   });
@@ -921,3 +959,28 @@ function bindEvents() {
   });
   backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 }
+
+// ── Grid Toggle Logic ────────────────────────
+let currentGridCols = localStorage.getItem('gridCols') || 'grid-2';
+const gridLayoutBtn = document.getElementById('gridLayoutBtn');
+const recipeGrid = document.getElementById('recipeGrid');
+
+function applyGridCols() {
+  if (!recipeGrid) return;
+  recipeGrid.classList.remove('grid-1', 'grid-2', 'grid-3');
+  recipeGrid.classList.add(currentGridCols);
+}
+
+if (gridLayoutBtn) {
+  gridLayoutBtn.addEventListener('click', () => {
+    if (currentGridCols === 'grid-2') currentGridCols = 'grid-3';
+    else if (currentGridCols === 'grid-3') currentGridCols = 'grid-1';
+    else currentGridCols = 'grid-2';
+    
+    localStorage.setItem('gridCols', currentGridCols);
+    applyGridCols();
+  });
+}
+
+// Call initially
+applyGridCols();

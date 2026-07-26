@@ -33,6 +33,7 @@
           <input type="text" id="searchInput" class="search-input" placeholder="Пошук рецепту..." autocomplete="off">
           <button id="searchClear" class="search-clear" title="Очистити">✕</button>
         </div>
+        <button id="gridLayoutBtn" class="theme-btn" title="Змінити вигляд">⚏</button>
         <button id="themeBtn" class="theme-btn" title="Змінити тему">🌙</button>
       </div>
     </div>
@@ -67,9 +68,7 @@
   <section class="filters-section">
     <div class="container">
       <div class="filters-header">
-        <div id="categoryTabs" class="category-tabs">
-          <!-- JS injected tabs -->
-        </div>
+        <button id="openFiltersBtn" class="btn-primary" style="padding: 10px 20px; font-weight: 500;">Фільтри (0)</button>
         <div class="sort-wrap">
           <select id="sortSelect" class="sort-select" aria-label="Сортування">
             <option value="default">За замовчуванням</option>
@@ -211,6 +210,25 @@
 
       
 
+    </div>
+  </div>
+
+
+
+  <!-- Filters Modal -->
+  <div class="modal-overlay" id="filtersModalOverlay">
+    <div class="modal filters-modal">
+      <header class="modal-header">
+        <h2>Фільтри</h2>
+        <button class="modal-close" id="closeFiltersBtn">✕</button>
+      </header>
+      <div class="filters-body" id="filtersModalBody">
+        <!-- JS injected checkboxes -->
+      </div>
+      <div class="filters-footer">
+        <button class="btn-outline" id="clearFiltersBtn">Скинути</button>
+        <button class="btn-primary" id="applyFiltersBtn">Застосувати</button>
+      </div>
     </div>
   </div>
 
