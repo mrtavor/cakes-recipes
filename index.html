@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pauline Secret — Рецепти та Відео</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
+</head>
+<body>
+
+  <!-- Progress Banner -->
+  <div id="progressBanner" class="progress-banner" style="display:none">
+    <div class="progress-inner">
+      <div class="spinner"></div>
+      <span id="progressText">Оновлення...</span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="#" class="logo">
+        <span class="logo-icon">🎂</span>
+        <div class="logo-text">
+          <span class="logo-title">Pauline Secret</span>
+          <span class="logo-sub">Колекція рецептів</span>
+        </div>
+      </a>
+      <div class="header-controls">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" class="search-input" placeholder="Пошук рецепту..." autocomplete="off">
+          <button id="searchClear" class="search-clear" title="Очистити">✕</button>
+        </div>
+        <button id="themeBtn" class="theme-btn" title="Змінити тему">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">Секретні <span>Рецепти</span></h1>
+      <p class="hero-subtitle">Ексклюзивна колекція авторських рецептів та відеоуроків від Pauline Secret</p>
+      
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num" id="statTotal">—</span>
+          <span class="stat-label">Рецептів</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" id="statCats">—</span>
+          <span class="stat-label">Категорій</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num" style="color: var(--accent);">1272</span>
+          <span class="stat-label">Відеоуроків</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-decor">
+      <div class="decor-circle c1"></div>
+      <div class="decor-circle c2"></div>
+      <div class="decor-circle c3"></div>
+    </div>
+  </section>
+
+  <!-- Filters Section -->
+  <section class="filters-section">
+    <div class="container">
+      <div class="filters-header">
+        <div id="categoryTabs" class="category-tabs">
+          <!-- JS injected tabs -->
+        </div>
+        <div class="sort-wrap">
+          <select id="sortSelect" class="sort-select" aria-label="Сортування">
+            <option value="default">За замовчуванням</option>
+            <option value="az">Назва А → Я</option>
+            <option value="za">Назва Я → А</option>
+            <option value="time">За часом приготування</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container main-content">
+    <div id="resultsInfo" class="results-info"></div>
+
+    <!-- Grid -->
+    <div id="recipesGrid" class="recipes-grid">
+      <!-- JS injected cards -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display:none">
+      <div class="empty-illustration">🔍</div>
+      <h3>Нічого не знайдено</h3>
+      <p>Спробуйте змінити запит або вибрати іншу категорію</p>
+    </div>
+  </main>
+
+  <!-- Modal Overlay -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal">
+
+      <header class="modal-header">
+        <div class="modal-header-info">
+          <span id="modalBadge" class="modal-badge"></span>
+          <h2 id="modalTitle" class="modal-title"></h2>
+          <div id="modalMeta" class="modal-meta"></div>
+        </div>
+        <div class="modal-header-actions">
+          <button id="modalCalcBtn" class="modal-btn calc-action-btn" title="Калькулятор інгредієнтів">🧮 Перерахувати</button>
+          <button id="modalFavBtn" class="modal-btn fav-btn" title="Додати в обране">♡</button>
+          <button id="modalPdfBtn" class="modal-btn pdf-btn" title="Друк / Зберегти PDF">🖨️</button>
+          <button id="modalClose" class="modal-close" title="Закрити">✕</button>
+        </div>
+      </header>
+
+      <!-- Calculator Panel (Hidden by default) -->
+      <div id="calculatorPanel" class="calculator-panel" style="display: none;">
+        <div class="calc-header">
+          <h3>🧮 Калькулятор інгредієнтів</h3>
+          <button id="closeCalcBtn" class="close-calc-btn">✕</button>
+        </div>
+        
+        <div class="calc-modes">
+          <label class="calc-mode-label">
+            <input type="radio" name="calcMode" value="multiplier" checked> Множник порцій
+          </label>
+          <label class="calc-mode-label">
+            <input type="radio" name="calcMode" value="shape"> Зміна форми
+          </label>
+        </div>
+
+        <div id="calcMultiplierSection" class="calc-section">
+          <label>Множник (напр. 2 для подвійної порції):</label>
+          <div class="calc-input-group">
+            <button class="calc-preset-btn" data-val="0.5">x0.5</button>
+            <button class="calc-preset-btn" data-val="1">x1</button>
+            <button class="calc-preset-btn" data-val="1.5">x1.5</button>
+            <button class="calc-preset-btn" data-val="2">x2</button>
+            <input type="number" id="calcMultiplierInput" class="calc-input" value="1" step="0.1" min="0.1">
+          </div>
+        </div>
+
+        <div id="calcShapeSection" class="calc-section" style="display: none;">
+          <div class="calc-shape-row">
+            <div class="calc-shape-col">
+              <h4>Початкова форма</h4>
+              <p class="calc-hint" id="calcOriginalHint">Введіть дані або ми спробуємо знайти їх в рецепті.</p>
+              <div class="custom-select-wrapper">
+                <div class="custom-select">
+                  <div class="custom-select-trigger"><span>Круг (см)</span> <i class="select-arrow">▼</i></div>
+                  <div class="custom-options">
+                    <div class="custom-option selected" data-value="circle">Круг (см)</div>
+                    <div class="custom-option" data-value="square">Квадрат (см)</div>
+                    <div class="custom-option" data-value="rectangle">Прямокутник (см)</div>
+                  </div>
+                </div>
+                <input type="hidden" id="origShape" value="circle">
+              </div>
+              <div class="calc-input-row" id="origDimRow">
+                <input type="number" id="origDim1" class="calc-input" placeholder="Діаметр" min="1">
+                <input type="number" id="origDim2" class="calc-input" placeholder="Сторона B" style="display:none;" min="1">
+              </div>
+            </div>
+            
+            <div class="calc-shape-arrow">→</div>
+            
+            <div class="calc-shape-col">
+              <h4>Нова форма</h4>
+              <p class="calc-hint">Введіть розміри форми, яку ви будете використовувати.</p>
+              <div class="custom-select-wrapper">
+                <div class="custom-select">
+                  <div class="custom-select-trigger"><span>Круг (см)</span> <i class="select-arrow">▼</i></div>
+                  <div class="custom-options">
+                    <div class="custom-option selected" data-value="circle">Круг (см)</div>
+                    <div class="custom-option" data-value="square">Квадрат (см)</div>
+                    <div class="custom-option" data-value="rectangle">Прямокутник (см)</div>
+                  </div>
+                </div>
+                <input type="hidden" id="newShape" value="circle">
+              </div>
+              <div class="calc-input-row" id="newDimRow">
+                <input type="number" id="newDim1" class="calc-input" placeholder="Діаметр" min="1">
+                <input type="number" id="newDim2" class="calc-input" placeholder="Сторона B" style="display:none;" min="1">
+              </div>
+            </div>
+          </div>
+          
+          <div class="calc-height-row">
+            <label>
+              <input type="checkbox" id="useHeightCb"> Враховувати зміну висоти торту
+            </label>
+            <div id="heightInputs" class="calc-input-row" style="display:none;">
+              <input type="number" id="origHeight" class="calc-input" placeholder="Стара вис. (см)">
+              <span>→</span>
+              <input type="number" id="newHeight" class="calc-input" placeholder="Нова вис. (см)">
+            </div>
+          </div>
+          
+          <div class="calc-result-badge">Коефіцієнт: <span id="calcShapeResult">1.00</span>x</div>
+        </div>
+      </div>
+
+      <div id="modalBody" class="modal-body">
+        <!-- JS injected recipe details + video player -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Back to top -->
+  <button id="backTop" class="back-top" title="Вгору">↑</button>
+
+  <script src="recipes_data.js"></script>
+  <script src="youtube_links.js" onerror="console.log('YouTube links file not found (yet).');"></script>
+  <script src="app.js"></script>
+</body>
+</html>
