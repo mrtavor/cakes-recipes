@@ -328,7 +328,6 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   overflow-x: auto;
   flex: 1;
   padding: 4px;
-  scroll-behavior: smooth;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
 }
