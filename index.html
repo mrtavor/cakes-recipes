@@ -68,7 +68,11 @@
   <section class="filters-section">
     <div class="container">
       <div class="filters-header">
-        <button id="openFiltersBtn" class="btn-primary" style="padding: 10px 20px; font-weight: 500;">Фільтри (0)</button>
+        <button id="openFiltersBtn" class="btn-filter">
+          <span class="filter-icon">⚙️</span>
+          Фільтри
+          <span class="filter-badge" id="filterCountBadge" style="display:none;">0</span>
+        </button>
         <div class="sort-wrap">
           <select id="sortSelect" class="sort-select" aria-label="Сортування">
             <option value="default">За замовчуванням</option>
