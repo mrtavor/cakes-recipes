@@ -340,7 +340,7 @@ function openModal(r) {
 
   const content = card.content || [];
   let hasIngredients = false;
-  const checkRegex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.л\.|ч\.л\.)(?![а-яА-Яa-zA-ZіІїЇєЄґҐ])/i;
+  const checkRegex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.?\s*л\.?|с\.?\s*л\.?|ч\.?\s*л\.?|с\.?\s*т\.?)(?![а-яА-Яa-zA-ZіІїЇєЄґҐ])/i;
   
   for (const b of content) {
     if (b.type === 'paragraph') {
@@ -617,7 +617,7 @@ function sanitize(str) {
 function wrapIngredients(text) {
   // Знаходить діапазони "300-350 г" або одиничні числа "300 г"
   // Додано (?![а-яА-Яa-zA-ZіІїЇєЄґҐ]), щоб не обрізати слова типу "15 годин"
-  const regex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.л\.|ч\.л\.)(?![а-яА-Яa-zA-ZіІїЇєЄґҐ])/gi;
+  const regex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.?\s*л\.?|с\.?\s*л\.?|ч\.?\s*л\.?|с\.?\s*т\.?)(?![а-яА-Яa-zA-ZіІїЇєЄґҐ])/gi;
   return text.replace(regex, (match, n1, n2, unit) => {
     const orig1 = parseFloat(n1.replace(',', '.'));
     if (n2) {
