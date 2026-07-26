@@ -320,6 +320,9 @@ function openModal(r) {
   const info = r.info || {};
   let card = r.card || {};
   if (card.card) card = card.card;
+  
+
+  
   const cats = info.categories || r.categories || [];
   const isFav = favorites.includes(info.card_id);
 
@@ -337,14 +340,10 @@ function openModal(r) {
 
   const content = card.content || [];
   let hasIngredients = false;
-  let currentInIngredients = false;
-  const checkRegex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.л\.|ч\.л\.)/i;
+  const checkRegex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.л\.|ч\.л\.)(?![а-яА-Яa-zA-ZіІїЇєЄґҐ])/i;
   
   for (const b of content) {
-    if (b.type === 'container') {
-      const txt = (b.data.text || '').toLowerCase();
-      currentInIngredients = txt.includes('ингр') || txt.includes('інгр');
-    } else if (b.type === 'paragraph' && currentInIngredients) {
+    if (b.type === 'paragraph') {
       if (checkRegex.test(b.data.text || '')) {
         hasIngredients = true;
         break;
