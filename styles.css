@@ -1177,7 +1177,7 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 @media (min-width: 769px) {
   .modal.calc-open {
     max-width: 1220px; /* 840 + 380 */
-    flex-direction: row;
+    flex-direction: row; height: calc(100vh - 48px); /* explicit height fix */
   }
   .modal.calc-open .calculator-panel {
     display: block;
