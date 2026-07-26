@@ -581,7 +581,7 @@ function parseBlocks(content, recipeTitle = '') {
             } else {
               // Красива заглушка для Інтернету (наприклад, GitHub Pages)
               html += `
-                <div class="recipe-embed placeholder-container" style="margin: 16px auto; max-width: 800px; height: 300px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fce4ec, #f8bbd0); box-shadow: var(--shadow-md); text-align: center; padding: 20px;">
+                <div class="recipe-embed placeholder-container" style="margin: 16px auto; width: 100%; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #fce4ec, #f8bbd0); text-align: center; padding: 20px; box-sizing: border-box;">
                   <div>
                     <div style="font-size: 48px; margin-bottom: 12px; animation: bounce 2s infinite;">🎬</div>
                     <h3 style="color: #c2185b; margin: 0 0 10px 0; font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 700;">Відео ще обробляється</h3>
