@@ -536,16 +536,21 @@ function parseBlocks(content, recipeTitle = '') {
       // Detect numbered step (starts with digit + dot/period)
       const stepMatch = text.match(/^(\d+)\.\s+(.*)/s);
       
-      if (inIngredients) {
-        text = wrapIngredients(text);
-      }
-      
+      let contentHtml = '';
       if (stepMatch && !inIngredients) {
         stepCounter++;
-        const inner = sanitize(stepMatch[2]);
-        html += `<div class="recipe-step"><span class="step-num">${stepMatch[1]}</span><div class="step-text">${inner}</div></div>`;
+        contentHtml = sanitize(stepMatch[2]);
       } else {
-        html += `<p class="recipe-para">${sanitize(text)}</p>`;
+        contentHtml = sanitize(text);
+      }
+      
+      // Застосовуємо парсер грамівок ДО ВСІХ блоків тексту
+      contentHtml = wrapIngredients(contentHtml);
+      
+      if (stepMatch && !inIngredients) {
+        html += `<div class="recipe-step"><span class="step-num">${stepMatch[1]}</span><div class="step-text">${contentHtml}</div></div>`;
+      } else {
+        html += `<p class="recipe-para">${contentHtml}</p>`;
       }
 
     } else if (type === 'embed') {
@@ -612,7 +617,8 @@ function sanitize(str) {
 
 function wrapIngredients(text) {
   // Знаходить діапазони "300-350 г" або одиничні числа "300 г"
-  const regex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.л\.|ч\.л\.)/gi;
+  // Додано (?![а-яА-Яa-zA-ZіІїЇєЄґҐ]), щоб не обрізати слова типу "15 годин"
+  const regex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.л\.|ч\.л\.)(?![а-яА-Яa-zA-ZіІїЇєЄґҐ])/gi;
   return text.replace(regex, (match, n1, n2, unit) => {
     const orig1 = parseFloat(n1.replace(',', '.'));
     if (n2) {
