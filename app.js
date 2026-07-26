@@ -356,7 +356,6 @@ function openModal(r) {
     modalCalcBtn.style.display = 'flex';
   } else {
     modalCalcBtn.style.display = 'none';
-    document.getElementById('calculatorPanel').style.display = 'none';
   }
 
   // Parse blocks

@@ -14,7 +14,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto; /* Scroll inside main area */
+  min-height: 0;
 }
 
 /* Reset modal body scrolling so modal-main handles it, or let modal-main be column and body scrolls */
