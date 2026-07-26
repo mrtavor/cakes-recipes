@@ -382,7 +382,7 @@ function closeModal() {
   overlay.classList.remove('open');
   document.body.classList.remove('modal-open');
   document.documentElement.style.removeProperty('--scrollbar-width');
-  calcPanel.style.display = 'none';
+  overlay.querySelector('.modal').classList.remove('calc-open');
   currentRecipe = null;
 }
 
@@ -902,10 +902,10 @@ function bindEvents() {
   // Modal
   modalClose.addEventListener('click', closeModal);
   modalCalcBtn.addEventListener('click', () => {
-    calcPanel.style.display = calcPanel.style.display === 'none' ? 'block' : 'none';
+    overlay.querySelector('.modal').classList.toggle('calc-open');
   });
   closeCalcBtn.addEventListener('click', () => {
-    calcPanel.style.display = 'none';
+    overlay.querySelector('.modal').classList.remove('calc-open');
   });
   
   overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });

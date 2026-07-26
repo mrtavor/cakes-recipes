@@ -109,7 +109,8 @@
   <div id="modalOverlay" class="modal-overlay">
     <div class="modal">
 
-      <header class="modal-header">
+            <div class="modal-main">
+<header class="modal-header">
         <div class="modal-header-info">
           <span id="modalBadge" class="modal-badge"></span>
           <h2 id="modalTitle" class="modal-title"></h2>
@@ -123,7 +124,11 @@
         </div>
       </header>
 
-      <!-- Calculator Panel (Hidden by default) -->
+      <div id="modalBody" class="modal-body">
+        <!-- JS injected recipe details + video player -->
+      </div>
+      </div>
+<!-- Calculator Panel (Hidden by default) -->
       <div id="calculatorPanel" class="calculator-panel" style="display: none;">
         <div class="calc-header">
           <h3>🧮 Калькулятор інгредієнтів</h3>
@@ -210,9 +215,7 @@
         </div>
       </div>
 
-      <div id="modalBody" class="modal-body">
-        <!-- JS injected recipe details + video player -->
-      </div>
+      
 
     </div>
   </div>
