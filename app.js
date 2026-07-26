@@ -698,15 +698,14 @@ function setupCalculator(r) {
       
       if (areaOrig > 0 && areaNew > 0) {
         ratio = areaNew / areaOrig;
-        if (useHeightCb.checked) {
-          let ho = parseFloat(origHeight.value) || 1;
-          let hn = parseFloat(newHeight.value) || 1;
-          if (ho > 0 && hn > 0) {
-            ratio *= (hn / ho);
-          }
+      }
+      
+      if (useHeightCb.checked) {
+        let ho = parseFloat(origHeight.value);
+        let hn = parseFloat(newHeight.value);
+        if (!isNaN(ho) && !isNaN(hn) && ho > 0 && hn > 0) {
+          ratio *= (hn / ho);
         }
-      } else {
-        ratio = 1;
       }
     }
     
