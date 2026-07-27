@@ -68,12 +68,120 @@ const progBanner  = document.getElementById('progressBanner');
 const progText    = document.getElementById('progressText');
 
 // ── Init ──────────────────────────────────────
+// Auth and Crypto
+const SALT = "Zybenko Mihail Petrovich";
+
+async function deriveKey(password) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits", "deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: enc.encode(SALT),
+      iterations: 100000,
+      hash: "SHA-256"
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function decryptData(key, encryptedBase64) {
+  const binaryString = atob(encryptedBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  const iv = bytes.slice(0, 12);
+  const ciphertext = bytes.slice(12);
+
+  const decrypted = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: iv },
+    key,
+    ciphertext
+  );
+  const dec = new TextDecoder();
+  return dec.decode(decrypted);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   initTheme();
+  
+  const savedToken = localStorage.getItem('auth_token');
+  const tokenDate = localStorage.getItem('auth_date');
+  
+  let isAuthenticated = false;
+  
+  if (savedToken && tokenDate) {
+    const diffDays = (Date.now() - parseInt(tokenDate)) / (1000 * 60 * 60 * 24);
+    if (diffDays < 30) {
+      try {
+        const key = await deriveKey(savedToken);
+        const jsonStr = await decryptData(key, window.ENCRYPTED_RECIPES);
+        window.RECIPES = JSON.parse(jsonStr);
+        isAuthenticated = true;
+      } catch (e) {
+        console.error("Token decryption failed", e);
+      }
+    }
+  }
+
+  if (isAuthenticated) {
+    await initApp();
+  } else {
+    document.getElementById('loginOverlay').style.display = 'flex';
+  }
+  
+  const loginBtn = document.getElementById('loginBtn');
+  const userIn = document.getElementById('loginUser');
+  const passIn = document.getElementById('loginPass');
+  const errEl = document.getElementById('loginError');
+
+  if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+      errEl.style.display = 'none';
+      loginBtn.textContent = 'Завантаження...';
+      loginBtn.disabled = true;
+      
+      if (userIn.value.trim() !== "Zybenko Mihail Petrovich") {
+          errEl.style.display = 'block';
+          loginBtn.textContent = 'Увійти';
+          loginBtn.disabled = false;
+          return;
+      }
+      
+      try {
+        const key = await deriveKey(passIn.value);
+        const jsonStr = await decryptData(key, window.ENCRYPTED_RECIPES);
+        window.RECIPES = JSON.parse(jsonStr);
+        
+        localStorage.setItem('auth_token', passIn.value);
+        localStorage.setItem('auth_date', Date.now().toString());
+        
+        document.getElementById('loginOverlay').style.display = 'none';
+        await initApp();
+      } catch(e) {
+        errEl.style.display = 'block';
+      }
+      loginBtn.textContent = 'Увійти';
+      loginBtn.disabled = false;
+    });
+  }
+});
+
+async function initApp() {
   await loadRecipes();
   bindEvents();
   startProgressTracker();
-});
+}
 
 async function loadRecipes() {
   try {
@@ -963,7 +1071,7 @@ function bindEvents() {
 // ── Grid Toggle Logic ────────────────────────
 let currentGridCols = localStorage.getItem('gridCols') || 'grid-2';
 const gridLayoutBtn = document.getElementById('gridLayoutBtn');
-const recipeGrid = document.getElementById('recipeGrid');
+const recipeGrid = document.getElementById('recipesGrid');
 
 function applyGridCols() {
   if (!recipeGrid) return;

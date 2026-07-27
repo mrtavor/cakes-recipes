@@ -235,13 +235,26 @@
     </div>
   </div>
 
+  
+  <!-- Login Overlay -->
+  <div id="loginOverlay" class="login-overlay" style="display: none;">
+    <div class="login-box">
+      <h2>🔒 Вхід</h2>
+      <p>Введіть дані для доступу</p>
+      <input type="text" id="loginUser" placeholder="Логін" autocomplete="off">
+      <input type="password" id="loginPass" placeholder="Пароль" autocomplete="off">
+      <button id="loginBtn" class="btn-primary" style="width: 100%; padding: 12px; font-size: 16px;">Увійти</button>
+      <p id="loginError" style="display:none; color: #ff4d4f; margin-top: 15px; margin-bottom: 0;">Невірний логін або пароль</p>
+    </div>
+  </div>
+
   <!-- Toast notification -->
   <div id="toast" class="toast"></div>
 
   <!-- Back to top -->
   <button id="backTop" class="back-top" title="Вгору">↑</button>
 
-  <script src="recipes_data.js"></script>
+  <script src="recipes_encrypted.js"></script>
   <script src="youtube_links.js" onerror="console.log('YouTube links file not found (yet).');"></script>
   <script src="app.js"></script>
 </body>
