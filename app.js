@@ -146,12 +146,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const errEl = document.getElementById('loginError');
 
   if (loginBtn) {
-    loginBtn.addEventListener('click', async () => {
+    const doLogin = async () => {
       errEl.style.display = 'none';
+      errEl.textContent = 'Невірний логін або пароль';
       loginBtn.textContent = 'Завантаження...';
       loginBtn.disabled = true;
+
+      const userVal = userIn.value.trim();
+      const passVal = passIn.value.trim();
       
-      if (userIn.value.trim() !== "Zybenko Mihail Petrovich") {
+      if (userVal !== "Zybenko Mihail Petrovich") {
+          errEl.style.display = 'block';
+          loginBtn.textContent = 'Увійти';
+          loginBtn.disabled = false;
+          return;
+      }
+
+      if (!window.crypto || !window.crypto.subtle) {
+          errEl.textContent = 'Потрібне захищене HTTPS з’єднання (наприклад, посилання GitHub Pages) або localhost для роботи Web Crypto API.';
           errEl.style.display = 'block';
           loginBtn.textContent = 'Увійти';
           loginBtn.disabled = false;
@@ -159,21 +171,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       
       try {
-        const key = await deriveKey(passIn.value);
+        const key = await deriveKey(passVal);
         const jsonStr = await decryptData(key, window.ENCRYPTED_RECIPES);
         window.RECIPES = JSON.parse(jsonStr);
         
-        localStorage.setItem('auth_token', passIn.value);
+        localStorage.setItem('auth_token', passVal);
         localStorage.setItem('auth_date', Date.now().toString());
         
         document.getElementById('loginOverlay').style.display = 'none';
         await initApp();
       } catch(e) {
+        console.error("Login error:", e);
         errEl.style.display = 'block';
       }
       loginBtn.textContent = 'Увійти';
       loginBtn.disabled = false;
-    });
+    };
+
+    loginBtn.addEventListener('click', doLogin);
+
+    const handleEnter = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doLogin();
+      }
+    };
+    if (userIn) userIn.addEventListener('keydown', handleEnter);
+    if (passIn) passIn.addEventListener('keydown', handleEnter);
   }
 });
 
