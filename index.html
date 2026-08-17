@@ -161,15 +161,17 @@
                   <div class="custom-select-trigger"><span>Круг (см)</span> <i class="select-arrow">▼</i></div>
                   <div class="custom-options">
                     <div class="custom-option selected" data-value="circle">Круг (см)</div>
-                    <div class="custom-option" data-value="square">Квадрат (см)</div>
                     <div class="custom-option" data-value="rectangle">Прямокутник (см)</div>
                   </div>
                 </div>
                 <input type="hidden" id="origShape" value="circle">
               </div>
               <div class="calc-input-row" id="origDimRow">
-                <input type="number" id="origDim1" class="calc-input" placeholder="Діаметр" min="1">
-                <input type="number" id="origDim2" class="calc-input" placeholder="Сторона B" style="display:none;" min="1">
+                <input type="number" id="origDim1" class="calc-input" placeholder="Діаметр (см)" min="1">
+                <input type="number" id="origDim2" class="calc-input" placeholder="Сторона Б (см)" style="display:none;" min="1">
+              </div>
+              <div class="calc-input-row calc-height-field" style="margin-top: 8px;">
+                <input type="number" id="origHeight" class="calc-input" placeholder="Висота (см)" min="1" step="0.5">
               </div>
             </div>
             
@@ -183,27 +185,18 @@
                   <div class="custom-select-trigger"><span>Круг (см)</span> <i class="select-arrow">▼</i></div>
                   <div class="custom-options">
                     <div class="custom-option selected" data-value="circle">Круг (см)</div>
-                    <div class="custom-option" data-value="square">Квадрат (см)</div>
                     <div class="custom-option" data-value="rectangle">Прямокутник (см)</div>
                   </div>
                 </div>
                 <input type="hidden" id="newShape" value="circle">
               </div>
               <div class="calc-input-row" id="newDimRow">
-                <input type="number" id="newDim1" class="calc-input" placeholder="Діаметр" min="1">
-                <input type="number" id="newDim2" class="calc-input" placeholder="Сторона B" style="display:none;" min="1">
+                <input type="number" id="newDim1" class="calc-input" placeholder="Діаметр (см)" min="1">
+                <input type="number" id="newDim2" class="calc-input" placeholder="Сторона Б (см)" style="display:none;" min="1">
               </div>
-            </div>
-          </div>
-          
-          <div class="calc-height-row">
-            <label>
-              <input type="checkbox" id="useHeightCb"> Враховувати зміну висоти торту
-            </label>
-            <div id="heightInputs" class="calc-input-row" style="display:none;">
-              <input type="number" id="origHeight" class="calc-input" placeholder="Стара вис. (см)">
-              <span>→</span>
-              <input type="number" id="newHeight" class="calc-input" placeholder="Нова вис. (см)">
+              <div class="calc-input-row calc-height-field" style="margin-top: 8px;">
+                <input type="number" id="newHeight" class="calc-input" placeholder="Висота (см)" min="1" step="0.5">
+              </div>
             </div>
           </div>
           

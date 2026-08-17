@@ -789,8 +789,6 @@ function setupCalculator(r) {
   const newDim1 = document.getElementById('newDim1');
   const newDim2 = document.getElementById('newDim2');
   
-  const useHeightCb = document.getElementById('useHeightCb');
-  const heightInputs = document.getElementById('heightInputs');
   const origHeight = document.getElementById('origHeight');
   const newHeight = document.getElementById('newHeight');
 
@@ -799,35 +797,96 @@ function setupCalculator(r) {
   calcModeRadios[0].checked = true;
   multiSection.style.display = 'flex';
   shapeSection.style.display = 'none';
-  useHeightCb.checked = false;
-  heightInputs.style.display = 'none';
   
-  // Try to find original shape in recipe content (look for "Форма 18 см" or "18 см")
-  let foundDim = '';
+  // Parse original shape, dimensions and height from recipe content
+  let foundShape = 'circle';
+  let foundDim1 = '';
+  let foundDim2 = '';
+  let foundHeight = '';
+
   let content = [];
   if (r.card && r.card.card) content = r.card.card.content || [];
+  else if (r.card && r.card.content) content = r.card.content || [];
+  else if (r.content) content = r.content || [];
+
   for (let b of content) {
     if (b.type === 'paragraph' && b.data && b.data.text) {
-      let t = b.data.text.toLowerCase();
-      let m = t.match(/форма.*?(\d+)\s*см/i) || t.match(/кольцо.*?(\d+)\s*см/i) || t.match(/кільце.*?(\d+)\s*см/i);
-      if (m) { foundDim = m[1]; break; }
+      let t = b.data.text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+      
+      // Parse Height (e.g., "высотой 8 см", "висотою 5 см", "висота 15 см")
+      if (!foundHeight) {
+        let mh = t.match(/(?:висотою|высотой|висота|высота)\s*(?:торта|декора|рулета|сердца|парта)?\s*(?:без|с)?\s*(?:декора|стенки)?\s*~?\s*[-—–]?\s*(\d+(?:[.,]\d+)?)/i);
+        if (mh) foundHeight = mh[1].replace(',', '.');
+      }
+
+      // Parse Rectangle (e.g., "16х16 см", "22 х 16 см", "15х15 см")
+      if (!foundDim1) {
+        let mr = t.match(/(\d+(?:[.,]\d+)?)\s*[хx×]\s*(\d+(?:[.,]\d+)?)\s*см/i);
+        if (mr) {
+          foundShape = 'rectangle';
+          foundDim1 = mr[1].replace(',', '.');
+          foundDim2 = mr[2].replace(',', '.');
+        }
+      }
+
+      // Parse Circle / Diameter (e.g., "диаметром 18 см", "форма 18 см", "кільце 20 см")
+      if (!foundDim1) {
+        let md = t.match(/(?:діаметром|диаметром|діаметр|диаметр|форма|кольцо|кільце)\s*.*?(\d+(?:[.,]\d+)?)\s*см/i);
+        if (md) {
+          foundShape = 'circle';
+          foundDim1 = md[1].replace(',', '.');
+        }
+      }
     }
   }
-  
-  origShape.value = 'circle';
+
+  // Set values
+  origShape.value = foundShape;
   newShape.value = 'circle';
-  origDim1.value = foundDim || '';
-  origDim2.value = '';
+  origDim1.value = foundDim1 || '';
+  origDim2.value = foundDim2 || '';
   newDim1.value = '';
   newDim2.value = '';
-  origDim2.style.display = 'none';
-  newDim2.style.display = 'none';
+  origHeight.value = foundHeight || '';
+  newHeight.value = '';
+
+  // Helpers to update UI placeholders & custom selects
+  const syncCustomSelect = (hiddenInputEl) => {
+    const wrapper = hiddenInputEl.closest('.custom-select-wrapper');
+    if (!wrapper) return;
+    const triggerSpan = wrapper.querySelector('.custom-select-trigger span');
+    const options = wrapper.querySelectorAll('.custom-option');
+    options.forEach(opt => {
+      if (opt.dataset.value === hiddenInputEl.value) {
+        opt.classList.add('selected');
+        if (triggerSpan) triggerSpan.textContent = opt.textContent;
+      } else {
+        opt.classList.remove('selected');
+      }
+    });
+  };
+
+  const updateShapeInputs = (shapeVal, dim1El, dim2El) => {
+    if (shapeVal === 'rectangle') {
+      dim1El.placeholder = 'Сторона А (см)';
+      dim2El.placeholder = 'Сторона Б (см)';
+      dim2El.style.display = 'inline-block';
+    } else {
+      dim1El.placeholder = 'Діаметр (см)';
+      dim2El.placeholder = 'Сторона Б (см)';
+      dim2El.style.display = 'none';
+    }
+  };
+
+  syncCustomSelect(origShape);
+  syncCustomSelect(newShape);
+  updateShapeInputs(origShape.value, origDim1, origDim2);
+  updateShapeInputs(newShape.value, newDim1, newDim2);
   
   const getArea = (shape, d1, d2) => {
     let a = parseFloat(d1) || 0;
     let b = parseFloat(d2) || 0;
-    if (shape === 'circle') return Math.PI * Math.pow(a/2, 2);
-    if (shape === 'square') return a * a;
+    if (shape === 'circle') return Math.PI * Math.pow(a / 2, 2);
     if (shape === 'rectangle') return a * b;
     return 0;
   };
@@ -846,12 +905,10 @@ function setupCalculator(r) {
         ratio = areaNew / areaOrig;
       }
       
-      if (useHeightCb.checked) {
-        let ho = parseFloat(origHeight.value);
-        let hn = parseFloat(newHeight.value);
-        if (!isNaN(ho) && !isNaN(hn) && ho > 0 && hn > 0) {
-          ratio *= (hn / ho);
-        }
+      let ho = parseFloat(origHeight.value);
+      let hn = parseFloat(newHeight.value);
+      if (!isNaN(ho) && ho > 0 && !isNaN(hn) && hn > 0) {
+        ratio *= (hn / ho);
       }
     }
     
@@ -892,8 +949,14 @@ function setupCalculator(r) {
     const shapeInputs = [origShape, origDim1, origDim2, newShape, newDim1, newDim2, origHeight, newHeight];
     shapeInputs.forEach(i => i.addEventListener('input', calculateRatio));
     
-    origShape.addEventListener('change', () => { origDim2.style.display = origShape.value === 'rectangle' ? 'inline-block' : 'none'; calculateRatio(); });
-    newShape.addEventListener('change', () => { newDim2.style.display = newShape.value === 'rectangle' ? 'inline-block' : 'none'; calculateRatio(); });
+    origShape.addEventListener('change', () => { 
+      updateShapeInputs(origShape.value, origDim1, origDim2); 
+      calculateRatio(); 
+    });
+    newShape.addEventListener('change', () => { 
+      updateShapeInputs(newShape.value, newDim1, newDim2); 
+      calculateRatio(); 
+    });
     
     calcModeRadios.forEach(r => r.addEventListener('change', e => {
       if (e.target.value === 'multiplier') {
@@ -905,11 +968,6 @@ function setupCalculator(r) {
       }
       calculateRatio();
     }));
-    
-    useHeightCb.addEventListener('change', e => {
-      heightInputs.style.display = e.target.checked ? 'flex' : 'none';
-      calculateRatio();
-    });
     
     // Custom Select Logic
     document.querySelectorAll('.custom-select-wrapper').forEach(wrapper => {
