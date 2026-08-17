@@ -531,8 +531,12 @@ function openModal(r) {
   // Parse blocks
   modalBody.innerHTML = buildModalContent(r);
   
-  // Setup calculator
-  setupCalculator(r);
+  // Setup calculator safely
+  try {
+    setupCalculator(r);
+  } catch (err) {
+    console.error("Calculator setup error:", err);
+  }
 
   bindGallery();
   bindSections();
@@ -610,7 +614,8 @@ function buildGallery(images) {
 function bindGallery() {
   const gallery = document.getElementById('recipeGallery');
   if (!gallery) return;
-  const images = JSON.parse(gallery.dataset.images || '[]');
+  const rawImages = (gallery.getAttribute && gallery.getAttribute('data-images')) || gallery.dataset?.images || '[]';
+  const images = JSON.parse(rawImages || '[]');
   const img    = document.getElementById('galleryImg');
 
   const setIdx = idx => {
@@ -800,7 +805,7 @@ function wrapIngredients(text) {
 // ── Calculator Logic ──────────────────────────
 function setupCalculator(r) {
   const calcMultiInput = document.getElementById('calcMultiplierInput');
-  const calcModeRadios = document.getElementsByName('calcMode');
+  const calcModeRadios = document.querySelectorAll('input[name="calcMode"]');
   const calcShapeResult = document.getElementById('calcShapeResult');
   const multiSection = document.getElementById('calcMultiplierSection');
   const shapeSection = document.getElementById('calcShapeSection');
@@ -817,10 +822,10 @@ function setupCalculator(r) {
   const newHeight = document.getElementById('newHeight');
 
   // Reset UI
-  calcMultiInput.value = '1';
-  calcModeRadios[0].checked = true;
-  multiSection.style.display = 'flex';
-  shapeSection.style.display = 'none';
+  if (calcMultiInput) calcMultiInput.value = '1';
+  if (calcModeRadios && calcModeRadios.length) calcModeRadios[0].checked = true;
+  if (multiSection) multiSection.style.display = 'flex';
+  if (shapeSection) shapeSection.style.display = 'none';
   
   // Parse original shape, dimensions and height from recipe content
   let foundShape = 'circle';
