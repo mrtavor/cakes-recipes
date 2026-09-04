@@ -133,10 +133,13 @@
         
         <div class="calc-modes">
           <label class="calc-mode-label">
-            <input type="radio" name="calcMode" value="multiplier" checked> Множник порцій
+            <input type="radio" name="calcMode" value="multiplier" checked> Множник
           </label>
           <label class="calc-mode-label">
             <input type="radio" name="calcMode" value="shape"> Зміна форми
+          </label>
+          <label class="calc-mode-label" id="calcModeCakeLabel">
+            <input type="radio" name="calcMode" value="cake"> 🎂 Покриття торта
           </label>
         </div>
 
@@ -201,6 +204,59 @@
           </div>
           
           <div class="calc-result-badge">Коефіцієнт: <span id="calcShapeResult">1.00</span>x</div>
+        </div>
+
+        <div id="calcCakeSection" class="calc-section" style="display: none;">
+          <div class="calc-cake-card">
+            <h4>Параметри торта</h4>
+            <p class="calc-hint">Розрахунок кількості ганашу для повного вирівнювання (верхівка + боки).</p>
+            
+            <label class="calc-field-label">Форма торта:</label>
+            <div class="custom-select-wrapper">
+              <div class="custom-select">
+                <div class="custom-select-trigger"><span>Круг (см)</span> <i class="select-arrow">▼</i></div>
+                <div class="custom-options">
+                  <div class="custom-option selected" data-value="circle">Круг (см)</div>
+                  <div class="custom-option" data-value="rectangle">Прямокутник / Квадрат (см)</div>
+                </div>
+              </div>
+              <input type="hidden" id="cakeShape" value="circle">
+            </div>
+
+            <div class="calc-input-row" id="cakeDimRow" style="margin-top: 8px;">
+              <input type="number" id="cakeDim1" class="calc-input" placeholder="Діаметр (см)" value="18" min="5" max="60" step="0.5">
+              <input type="number" id="cakeDim2" class="calc-input" placeholder="Сторона Б (см)" value="18" style="display:none;" min="5" max="60" step="0.5">
+            </div>
+
+            <label class="calc-field-label" style="margin-top: 12px;">Висота торта (см):</label>
+            <div class="calc-input-row">
+              <input type="number" id="cakeHeight" class="calc-input" placeholder="Висота (см)" value="10" min="3" max="30" step="0.5">
+            </div>
+
+            <label class="calc-field-label" style="margin-top: 12px;">Товщина покриття (мм):</label>
+            <div class="calc-preset-row">
+              <button type="button" class="calc-cake-preset-btn" data-type="thickness" data-val="3">3 мм (тонкий)</button>
+              <button type="button" class="calc-cake-preset-btn active" data-type="thickness" data-val="4">4 мм (стандарт)</button>
+              <button type="button" class="calc-cake-preset-btn" data-type="thickness" data-val="5">5 мм (надійний)</button>
+            </div>
+            <div class="calc-input-row" style="margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+              <input type="number" id="cakeThickness" class="calc-input" placeholder="Товщина (мм)" value="4" min="1" max="15" step="0.5" style="width: 100px;">
+              <span class="calc-input-unit" style="font-size: 0.9rem; color: var(--text2);">мм</span>
+            </div>
+
+            <label class="calc-field-label" style="margin-top: 12px;">Запас на вирівнювання / втрати:</label>
+            <div class="calc-preset-row">
+              <button type="button" class="calc-cake-preset-btn" data-type="margin" data-val="10">10%</button>
+              <button type="button" class="calc-cake-preset-btn active" data-type="margin" data-val="15">15% (рекоменд.)</button>
+              <button type="button" class="calc-cake-preset-btn" data-type="margin" data-val="20">20%</button>
+            </div>
+            <input type="hidden" id="cakeMargin" value="15">
+          </div>
+
+          <div class="calc-cake-result-box">
+            <div class="calc-cake-weight">Потрібно ганашу: <strong id="calcCakeTotalWeight">~500</strong> г</div>
+            <div class="calc-cake-sub">Коефіцієнт рецепта: <span id="calcCakeRatio">1.00</span>x</div>
+          </div>
         </div>
       </div>
 

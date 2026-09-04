@@ -835,12 +835,20 @@ function wrapIngredients(text) {
 }
 
 // ── Calculator Logic ──────────────────────────
+function isCoatingRecipe(r) {
+  const info = r.info || {};
+  const title = (info.title || '').toLowerCase();
+  const cats = (info.categories || r.categories || []).map(c => (c.name || '').toLowerCase());
+  return title.includes('ганаш') || title.includes('вирівнювання') || title.includes('выравнивания') || cats.some(c => c.includes('крем'));
+}
+
 function setupCalculator(r) {
   const calcMultiInput = document.getElementById('calcMultiplierInput');
   const calcModeRadios = document.querySelectorAll('input[name="calcMode"]');
   const calcShapeResult = document.getElementById('calcShapeResult');
   const multiSection = document.getElementById('calcMultiplierSection');
   const shapeSection = document.getElementById('calcShapeSection');
+  const cakeSection = document.getElementById('calcCakeSection');
   
   // Shape Inputs
   const origShape = document.getElementById('origShape');
@@ -853,11 +861,44 @@ function setupCalculator(r) {
   const origHeight = document.getElementById('origHeight');
   const newHeight = document.getElementById('newHeight');
 
-  // Reset UI
+  // Cake Inputs
+  const cakeShape = document.getElementById('cakeShape');
+  const cakeDim1 = document.getElementById('cakeDim1');
+  const cakeDim2 = document.getElementById('cakeDim2');
+  const cakeHeight = document.getElementById('cakeHeight');
+  const cakeThickness = document.getElementById('cakeThickness');
+  const cakeMargin = document.getElementById('cakeMargin');
+  const calcCakeTotalWeight = document.getElementById('calcCakeTotalWeight');
+  const calcCakeRatio = document.getElementById('calcCakeRatio');
+
+  // Calculate base recipe total weight in grams
+  let baseRecipeWeight = 0;
+  document.querySelectorAll('.calc-val').forEach(el => {
+    const orig = parseFloat(el.dataset.orig);
+    if (!isNaN(orig) && orig > 0) {
+      baseRecipeWeight += orig;
+    }
+  });
+  if (baseRecipeWeight <= 0) baseRecipeWeight = 500;
+
+  // Auto-detect mode
+  const isCoating = isCoatingRecipe(r);
+  const calcModeCakeRadio = document.querySelector('input[name="calcMode"][value="cake"]');
+  const calcModeMultiRadio = document.querySelector('input[name="calcMode"][value="multiplier"]');
+
   if (calcMultiInput) calcMultiInput.value = '1';
-  if (calcModeRadios && calcModeRadios.length) calcModeRadios[0].checked = true;
-  if (multiSection) multiSection.style.display = 'flex';
-  if (shapeSection) shapeSection.style.display = 'none';
+
+  if (isCoating) {
+    if (calcModeCakeRadio) calcModeCakeRadio.checked = true;
+    if (cakeSection) cakeSection.style.display = 'flex';
+    if (multiSection) multiSection.style.display = 'none';
+    if (shapeSection) shapeSection.style.display = 'none';
+  } else {
+    if (calcModeMultiRadio) calcModeMultiRadio.checked = true;
+    if (cakeSection) cakeSection.style.display = 'none';
+    if (multiSection) multiSection.style.display = 'flex';
+    if (shapeSection) shapeSection.style.display = 'none';
+  }
   
   // Parse original shape, dimensions and height from recipe content
   let foundShape = 'circle';
@@ -934,6 +975,7 @@ function setupCalculator(r) {
   };
 
   const updateShapeInputs = (shapeVal, dim1El, dim2El) => {
+    if (!dim1El || !dim2El) return;
     if (shapeVal === 'rectangle') {
       dim1El.placeholder = 'Сторона А (см)';
       dim2El.placeholder = 'Сторона Б (см)';
@@ -945,10 +987,27 @@ function setupCalculator(r) {
     }
   };
 
+  const updateCakeShapeInputs = (shapeVal) => {
+    if (!cakeDim1 || !cakeDim2) return;
+    if (shapeVal === 'rectangle') {
+      cakeDim1.placeholder = 'Сторона А (см)';
+      cakeDim2.placeholder = 'Сторона Б (см)';
+      cakeDim2.style.display = 'inline-block';
+    } else {
+      cakeDim1.placeholder = 'Діаметр (см)';
+      cakeDim2.placeholder = 'Сторона Б (см)';
+      cakeDim2.style.display = 'none';
+    }
+  };
+
   syncCustomSelect(origShape);
   syncCustomSelect(newShape);
   updateShapeInputs(origShape.value, origDim1, origDim2);
   updateShapeInputs(newShape.value, newDim1, newDim2);
+  if (cakeShape) {
+    syncCustomSelect(cakeShape);
+    updateCakeShapeInputs(cakeShape.value);
+  }
   
   const getArea = (shape, d1, d2) => {
     let a = parseFloat(d1) || 0;
@@ -959,12 +1018,13 @@ function setupCalculator(r) {
   };
   
   const calculateRatio = () => {
-    let mode = document.querySelector('input[name="calcMode"]:checked').value;
+    const checkedRadio = document.querySelector('input[name="calcMode"]:checked');
+    const mode = checkedRadio ? checkedRadio.value : 'multiplier';
     let ratio = 1;
     
     if (mode === 'multiplier') {
       ratio = parseFloat(calcMultiInput.value) || 1;
-    } else {
+    } else if (mode === 'shape') {
       let areaOrig = getArea(origShape.value, origDim1.value, origDim2.value);
       let areaNew = getArea(newShape.value, newDim1.value, newDim2.value);
       
@@ -977,9 +1037,48 @@ function setupCalculator(r) {
       if (!isNaN(ho) && ho > 0 && !isNaN(hn) && hn > 0) {
         ratio *= (hn / ho);
       }
+      if (calcShapeResult) calcShapeResult.textContent = ratio.toFixed(2);
+    } else if (mode === 'cake') {
+      const shape = cakeShape ? cakeShape.value : 'circle';
+      const d1 = parseFloat(cakeDim1?.value) || 18;
+      const d2 = parseFloat(cakeDim2?.value) || d1;
+      const h = parseFloat(cakeHeight?.value) || 10;
+      const thickMm = parseFloat(cakeThickness?.value) || 4;
+      const marginPct = parseFloat(cakeMargin?.value) || 15;
+
+      // Surface area in cm²
+      let sTop = 0;
+      let sSide = 0;
+      if (shape === 'circle') {
+        const radius = d1 / 2;
+        sTop = Math.PI * Math.pow(radius, 2);
+        sSide = Math.PI * d1 * h;
+      } else {
+        sTop = d1 * d2;
+        sSide = 2 * (d1 + d2) * h;
+      }
+      const sTotal = sTop + sSide; // cm²
+
+      // Volume in cm³ (thickness mm -> cm)
+      const thickCm = thickMm / 10;
+      const volumeCm3 = sTotal * thickCm;
+
+      // Net weight in grams (ganache density ~1.15 g/cm³)
+      const DENSITY = 1.15;
+      const netWeight = volumeCm3 * DENSITY;
+
+      // Total weight with safety/smoothing margin
+      const totalWeight = Math.round(netWeight * (1 + marginPct / 100));
+
+      if (baseRecipeWeight > 0) {
+        ratio = totalWeight / baseRecipeWeight;
+      } else {
+        ratio = 1;
+      }
+
+      if (calcCakeTotalWeight) calcCakeTotalWeight.textContent = `~${totalWeight}`;
+      if (calcCakeRatio) calcCakeRatio.textContent = ratio.toFixed(2);
     }
-    
-    calcShapeResult.textContent = ratio.toFixed(2);
     
     // Update all DOM elements
     document.querySelectorAll('.calc-val').forEach(el => {
@@ -1004,6 +1103,7 @@ function setupCalculator(r) {
 
   // Bind events for inputs
   if (!window._calcEventsBound) {
+    window._calcEventsBound = true;
     calcMultiInput.addEventListener('input', calculateRatio);
     document.querySelectorAll('.calc-preset-btn').forEach(b => {
       b.onclick = (e) => {
@@ -1014,7 +1114,7 @@ function setupCalculator(r) {
     });
     
     const shapeInputs = [origShape, origDim1, origDim2, newShape, newDim1, newDim2, origHeight, newHeight];
-    shapeInputs.forEach(i => i.addEventListener('input', calculateRatio));
+    shapeInputs.forEach(i => i && i.addEventListener('input', calculateRatio));
     
     origShape.addEventListener('change', () => { 
       updateShapeInputs(origShape.value, origDim1, origDim2); 
@@ -1024,15 +1124,40 @@ function setupCalculator(r) {
       updateShapeInputs(newShape.value, newDim1, newDim2); 
       calculateRatio(); 
     });
+
+    const cakeInputs = [cakeShape, cakeDim1, cakeDim2, cakeHeight, cakeThickness];
+    cakeInputs.forEach(inp => {
+      if (inp) inp.addEventListener('input', calculateRatio);
+    });
+
+    if (cakeShape) {
+      cakeShape.addEventListener('change', () => {
+        updateCakeShapeInputs(cakeShape.value);
+        calculateRatio();
+      });
+    }
+
+    document.querySelectorAll('.calc-cake-preset-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const type = btn.dataset.type;
+        const val = btn.dataset.val;
+        document.querySelectorAll(`.calc-cake-preset-btn[data-type="${type}"]`).forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (type === 'thickness') {
+          if (cakeThickness) cakeThickness.value = val;
+        } else if (type === 'margin') {
+          if (cakeMargin) cakeMargin.value = val;
+        }
+        calculateRatio();
+      };
+    });
     
     calcModeRadios.forEach(r => r.addEventListener('change', e => {
-      if (e.target.value === 'multiplier') {
-        multiSection.style.display = 'flex';
-        shapeSection.style.display = 'none';
-      } else {
-        multiSection.style.display = 'none';
-        shapeSection.style.display = 'flex';
-      }
+      const val = e.target.value;
+      if (multiSection) multiSection.style.display = val === 'multiplier' ? 'flex' : 'none';
+      if (shapeSection) shapeSection.style.display = val === 'shape' ? 'flex' : 'none';
+      if (cakeSection) cakeSection.style.display = val === 'cake' ? 'flex' : 'none';
       calculateRatio();
     }));
     

@@ -919,6 +919,81 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 
 .calc-height-row { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 12px; }
 
+/* Cake Coating Section */
+.calc-cake-card {
+  background: var(--surface);
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.calc-cake-card h4 {
+  margin-bottom: 4px;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+.calc-field-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.calc-preset-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.calc-cake-preset-btn {
+  padding: 6px 12px;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.calc-cake-preset-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
+.calc-cake-preset-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.calc-cake-result-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--accent-light) 0%, var(--surface) 100%);
+  border: 1px solid var(--accent-glass);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+.calc-cake-weight {
+  font-size: 1.05rem;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.calc-cake-weight strong {
+  font-size: 1.35rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+.calc-cake-sub {
+  font-size: 0.88rem;
+  color: var(--text2);
+}
+.calc-cake-sub span {
+  font-weight: 600;
+  color: var(--accent-hover);
+}
+
 .calc-result-badge { margin-top: 20px; font-size: 1.1rem; font-weight: 600; padding: 12px 20px; background: var(--accent-light); color: var(--text); border-radius: 8px; border: 1px solid var(--accent-glass); display: inline-block; }
 .calc-result-badge span { color: var(--accent); font-size: 1.3rem; }
 
