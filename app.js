@@ -513,11 +513,13 @@ function openModal(r) {
   const checkRegex = /(\d+(?:[.,]\d+)?)(?:\s*[-—–]\s*(\d+(?:[.,]\d+)?))?\s*(г|кг|мл|л|шт|ст\.?\s*л\.?|с\.?\s*л\.?|ч\.?\s*л\.?|с\.?\s*т\.?)(?![а-яА-Яa-zA-ZіІїЇєЄґҐ])/i;
   
   for (const b of content) {
-    if (b.type === 'paragraph') {
-      if (checkRegex.test(b.data.text || '')) {
-        hasIngredients = true;
-        break;
-      }
+    if (b.type === 'paragraph' && checkRegex.test(b.data?.text || '')) {
+      hasIngredients = true;
+      break;
+    }
+    if (b.type === 'list' && (b.data?.items || []).some(item => checkRegex.test(item || ''))) {
+      hasIngredients = true;
+      break;
     }
   }
   
@@ -653,7 +655,9 @@ function parseBlocks(content, recipeTitle = '') {
       let hasContent = false;
       for (let j = i + 1; j < content.length; j++) {
         if (content[j].type === 'container') break;
-        if (content[j].type === 'paragraph' && (content[j].data.text || '').trim()) { hasContent = true; break; }
+        if (content[j].type === 'paragraph' && (content[j].data?.text || '').trim()) { hasContent = true; break; }
+        if (content[j].type === 'list' && (content[j].data?.items || []).length) { hasContent = true; break; }
+        if (content[j].type === 'header' && (content[j].data?.text || '').trim()) { hasContent = true; break; }
         if (content[j].type === 'embed' || content[j].type === 'slidertool') { hasContent = true; break; }
       }
       // Якщо контейнер порожній (немає тексту/відео) - пропускаємо його
@@ -667,7 +671,7 @@ function parseBlocks(content, recipeTitle = '') {
         const blockTxt = (data.text || '').toLowerCase();
         const titleWords = recipeTitle.toLowerCase().split(/\s+/).filter(w => w.length > 3);
         const matchesTitle = titleWords.length > 0 && titleWords.some(w => blockTxt.includes(w));
-        const isStandard = blockTxt.includes('инвентарь') || blockTxt.includes('ингредиент') || blockTxt.includes('приготовление') || blockTxt.includes('сборка');
+        const isStandard = blockTxt.includes('инвентарь') || blockTxt.includes('інвентар') || blockTxt.includes('ингредиент') || blockTxt.includes('інгредієнт') || blockTxt.includes('приготовление') || blockTxt.includes('приготування') || blockTxt.includes('сборка') || blockTxt.includes('збирання');
         
         if (matchesTitle || !isStandard) {
           i++;
@@ -701,6 +705,34 @@ function parseBlocks(content, recipeTitle = '') {
         // already rendered in gallery; skip duplicates
       }
       // skip — already shown in gallery at top
+
+    } else if (type === 'header') {
+      const level = data.level || 3;
+      const text = sanitize(data.text || '');
+      if (text) {
+        html += `<h${level} class="recipe-header level-${level}">${text}</h${level}>`;
+      }
+
+    } else if (type === 'list') {
+      const style = data.style === 'ordered' ? 'ol' : 'ul';
+      const listClass = `recipe-list ${data.style === 'ordered' ? 'ordered' : 'unordered'}`;
+      let listItems = [...(data.items || [])];
+      
+      // Об'єднуємо послідовні списки одного типу в один спільний тег
+      while (i + 1 < content.length && content[i + 1].type === 'list' && (content[i + 1].data || {}).style === data.style) {
+        i++;
+        listItems.push(...(content[i].data?.items || []));
+      }
+      
+      if (listItems.length) {
+        html += `<${style} class="${listClass}">`;
+        for (let item of listItems) {
+          let itemHtml = sanitize(item);
+          itemHtml = wrapIngredients(itemHtml);
+          html += `<li>${itemHtml}</li>`;
+        }
+        html += `</${style}>`;
+      }
 
     } else if (type === 'paragraph') {
       let text = data.text || '';
@@ -839,8 +871,14 @@ function setupCalculator(r) {
   else if (r.content) content = r.content || [];
 
   for (let b of content) {
-    if (b.type === 'paragraph' && b.data && b.data.text) {
-      let t = b.data.text.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+    let rawText = '';
+    if (b.type === 'paragraph' && b.data?.text) {
+      rawText = b.data.text;
+    } else if (b.type === 'list' && b.data?.items) {
+      rawText = b.data.items.join(' ');
+    }
+    if (rawText) {
+      let t = rawText.replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
       
       // Parse Height (e.g., "высотой 8 см", "висотою 5 см", "висота 15 см")
       if (!foundHeight) {

@@ -769,6 +769,36 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 .recipe-para { font-size: 1.05rem; color: var(--text); line-height: 1.8; margin-bottom: 12px; font-weight: 400; }
 .recipe-para b, .recipe-para strong { color: var(--text); font-weight: 600; background: var(--accent-light); padding: 0 4px; border-radius: 4px; }
 
+/* Lists */
+.recipe-list {
+  margin: 8px 0 16px 24px;
+  padding: 0;
+  color: var(--text);
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+.recipe-list li {
+  margin-bottom: 8px;
+}
+.recipe-list.unordered {
+  list-style-type: disc;
+}
+.recipe-list.ordered {
+  list-style-type: decimal;
+}
+
+/* Headers */
+.recipe-header {
+  font-family: 'Playfair Display', serif;
+  color: var(--text);
+  margin: 20px 0 12px 0;
+  font-weight: 700;
+}
+.recipe-header.level-1 { font-size: 1.4rem; }
+.recipe-header.level-2 { font-size: 1.25rem; }
+.recipe-header.level-3 { font-size: 1.15rem; }
+.recipe-header.level-4 { font-size: 1.05rem; }
+
 /* Numbered step */
 .recipe-step { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 16px; padding: 12px; border-radius: var(--radius-sm); background: var(--bg); transition: var(--transition); border: 1px solid transparent; }
 .recipe-step:hover { background: var(--surface); border-color: var(--border); box-shadow: var(--shadow-sm); transform: translateX(4px); }
